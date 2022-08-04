@@ -8,11 +8,11 @@ export function sortStrings(arr, param = 'asc') {
   let arrCopy = [...arr];
 
   if (param === 'asc') {
-    arrCopy.sort( (a, b) => a.localeCompare(b, ['ru', 'eng'], { caseFirst: 'upper' }));
+    arrCopy.sort((a, b) => a.localeCompare(b, ['ru', 'eng'], { caseFirst: 'upper' }));
   }
 
   if (param === 'desc') {
-    arrCopy.sort( (a, b) => -a.localeCompare(b, ['ru', 'eng'], { caseFirst: 'lower' }));
+    arrCopy.sort((a, b) => -a.localeCompare(b, ['ru', 'eng'], { caseFirst: 'lower' }));
   }
 
   return arrCopy;
