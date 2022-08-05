@@ -8,10 +8,3 @@ export const pick = (obj, ...fields) => {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => fields.includes(key)));
 };
 
-const fruits = {
-  apple: 2,
-  orange: 4,
-  banana: 3
-};
-
-pick(fruits, 'apple', 'banana');
