@@ -12,7 +12,7 @@ export function createGetter(path) {
 }
 
 export function isEmptyObj(obj) {
-  for (let prop in obj) {
+  for (const prop in obj) {
     return false;
   }
 
