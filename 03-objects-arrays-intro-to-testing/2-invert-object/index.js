@@ -11,7 +11,7 @@ export function invertObj(obj) {
 
   return Object.fromEntries(
     Object.entries(obj).map(item => {
-      let [value2, value1] = item;
+      const [value2, value1] = item;
       return [value1, value2];
     })
   );
