@@ -5,8 +5,8 @@
  */
 export function invertObj(obj) {
 
-  if (isUndefinedObj(obj)) {
-    return undefined;
+  if (obj === undefined) {
+    return;
   }
 
   return Object.fromEntries(
@@ -16,8 +16,3 @@ export function invertObj(obj) {
     })
   );
 }
-
-export function isUndefinedObj(obj) {
-  return (obj === undefined) ? true : false;
-}
-
