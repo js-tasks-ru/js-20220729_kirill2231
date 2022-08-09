@@ -7,14 +7,6 @@ export function createGetter(path) {
   const stringToArray = path.split(".");
 
   return function(obj) {
-    return isEmptyObj(obj) ? undefined : stringToArray.reduce((result, item) => result[item], obj);
+    return Object.keys(obj).length === 0 ? undefined : stringToArray.reduce((result, item) => result[item], obj);
   };
-}
-
-export function isEmptyObj(obj) {
-  for (const prop in obj) {
-    return false;
-  }
-
-  return true;
 }
