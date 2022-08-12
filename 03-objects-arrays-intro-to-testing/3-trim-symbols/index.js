@@ -4,7 +4,7 @@
  * @param {number} size - the allowed size of consecutive identical symbols
  * @returns {string} - the new string without extra symbols according passed size
  */
-export function trimSymbols(string, size = undefined) {
+export function trimSymbols(string, size) {
   const stringToArray = string.split("");
   let amountEqualSymbs = 0;
   let prevSymb = stringToArray[0];
