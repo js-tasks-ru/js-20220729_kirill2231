@@ -1,5 +1,6 @@
 export default class ColumnChart {
   chartHeight = 50;
+  cachingElements = {};
 
   constructor(
     {
@@ -27,8 +28,8 @@ export default class ColumnChart {
             ${this.getLink()}
             </div>
             <div class="column-chart__container">
-              <div class="column-chart__header">${this.value}</div>
-              <div class="column-chart__chart">
+              <div class="column-chart__header" data-element="header">${this.value}</div>
+              <div class="column-chart__chart" data-element="body">
                 ${this.getColumnChart(this.data)}
               </div>
             </div>
@@ -45,6 +46,20 @@ export default class ColumnChart {
     if (this.data.length) {
       this.element.classList.remove('column-chart_loading');
     }
+
+    this.cachingElements = this.getCachingElements();
+  }
+
+  getCachingElements() {
+    const result = {};
+    const elements = this.element.querySelectorAll("[data-element]");
+
+    elements.forEach(subElement => {
+      const name = subElement.dataset.element;
+      result[name] = subElement;
+    });
+
+    return result;
   }
 
   getColumnChart(data) {
@@ -71,11 +86,9 @@ export default class ColumnChart {
   }
 
   update(data) {
-    const columnChart = this.element.querySelector('.column-chart__chart');
-
     this.data = data;
 
-    columnChart.innerHTML = this.getColumnChart(data);
+    this.cachingElements.body.innerHTML = this.getColumnChart(data);
   }
 
   remove() {
@@ -87,5 +100,6 @@ export default class ColumnChart {
   destroy() {
     this.remove();
     this.element = null;
+    this.cachingElements = {};
   }
 }
