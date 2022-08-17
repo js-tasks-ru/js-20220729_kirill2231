@@ -1,6 +1,7 @@
-import {sortStrings} from '../../02-javascript-data-types/1-sort-strings/index.js';
-
 export default class SortableTable {
+
+  cachingElements = {};
+
   constructor(headerConfig = [], data = []) {
     this.headerConfig = headerConfig;
     this.data = data;
@@ -10,26 +11,15 @@ export default class SortableTable {
 
   getTemplate() {
     return `
-    <div data-element="productsContainer" class="products-list__container">
       <div class="sortable-table">
-
         <div data-element="header" class="sortable-table__header sortable-table__row">
-          ${this.addCellTableHeader(this.headerConfig)}
+          ${this.addRowHeaderTable(this.headerConfig)}
         </div>
 
-        <div data-element="body" class="sortable-table__body">
-          ${this.addCellTableBody(this.headerConfig, this.data)}
+        <div data-element="body" id="" class="sortable-table__body">
+          ${this.addRowsBodyTable(this.headerConfig, this.data)}
         </div>
-
-        <div data-element="loading" class="loading-line sortable-table__loading-line"></div>
-
-        <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
-          <div>
-            <p>No products satisfies your filter criteria</p>
-            <button type="button" class="button-primary-outline">Reset all filters</button>
-          </div>
-        </div>
-      </div>
+    </div>
         `;
   }
 
@@ -37,40 +27,84 @@ export default class SortableTable {
     const element = document.createElement('div');
     element.innerHTML = this.getTemplate();
     this.element = element.firstElementChild;
+
+    this.cachingElements = this.getCachingElements(this.element);
   }
 
-  addCellTableHeader(config) {
+  addRowHeaderTable(config) {
     return config.map(elem => {
       return `
         <div class="sortable-table__cell" data-id="${elem.id}" data-sortable="${elem.sortable}">
           <span>${elem.title}</span>
+          <span data-element="arrow" class="sortable-table__sort-arrow">
+            <span class="sort-arrow"></span>
+          </span>
         </div>
       `;
-    })
-    .join('');
+    }).join('');
   }
 
-  addCellTableBody(config, data) {
-    const template = `<a href="#" class="sortable-table__row">`;
+  addCellsBodyTable(dataElem, config) {
+    return config.map(configElem => {
+      return configElem.template
+        ? configElem.template(dataElem[configElem.id])
+        : `<div class="sortable-table__cell">${dataElem[configElem.id]}</div>`;
+    }).join('');
+  }
 
+  addRowsBodyTable(config, data) {
     return data.map(dataElem => {
-      return template + config.map(configElem => {
-        if (configElem.id === 'images') {
-          return configElem.template(dataElem[configElem.id]);
-        }
-
-        return `
-          <div class="sortable-table__cell">${dataElem[configElem.id]}</div>
-        `;
-      }).join('') + '</a>';
-    })
-    .join('');
+      return `
+        <a href="#" class="sortable-table__row">
+          ${this.addCellsBodyTable(dataElem, config)}
+        </a>
+      `;
+    }).join('');
   }
 
   sort(field, order) {
-    const arr = this.element.querySelectorAll('.sortable-table__row');
+    const sortedData = this.sortData(field, order);
+    const allColumns = this.element.querySelectorAll('.sortable-table__cell[data-id]');
+    const currentColumn = this.element.querySelector(`.sortable-table__cell[data-id="${field}"]`);
 
-    sortStrings(arr, 'asc');
+    allColumns.forEach(elem => {
+      elem.dataset.order = '';
+    });
+
+    currentColumn.dataset.order = order;
+
+    this.cachingElements.body.innerHTML = this.addRowsBodyTable(this.headerConfig, sortedData);
+  }
+
+  sortData(field, order) {
+    const arr = [...this.data];
+    const column = this.headerConfig.find(item => item.id === field);
+    const { sortType } = column;
+
+    return arr.sort((a, b) => {
+      const sortFactor = order === 'asc' ? 1 : -1;
+
+      switch (sortType) {
+        case 'number':
+          return sortFactor * (a[field] - b[field]);
+        case 'string':
+          return sortFactor * a[field].localeCompare(b[field], ['ru', 'eng']);
+        default:
+          return sortFactor * (a[field] - b[field]);
+        }
+    });
+  }
+
+  getCachingElements() {
+    const result = {};
+    const elements = this.element.querySelectorAll("[data-element]");
+
+    elements.forEach(subElement => {
+      const name = subElement.dataset.element;
+      result[name] = subElement;
+    });
+
+    return result;
   }
 
   remove() {
@@ -82,6 +116,7 @@ export default class SortableTable {
   destroy() {
     this.remove();
     this.element = null;
+    this.cachingElements = {};
   }
 }
 

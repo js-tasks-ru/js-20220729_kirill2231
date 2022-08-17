@@ -1,4 +1,8 @@
 export default class NotificationMessage {
+  static activeNotification;
+
+  timeout;
+
   constructor(
     message = '',
     {
@@ -27,29 +31,31 @@ export default class NotificationMessage {
         `;
   }
 
-  render(elem) {
+  render() {
     const element = document.createElement('div');
     element.innerHTML = this.getTemplate();
     this.element = element.firstElementChild;
-
-    document.body.append(this.element);
   }
 
   millisecondsToSeconds(milliseconds) {
     return milliseconds / 1000;
   }
 
-  show() {
-    const notificationElements = document.querySelectorAll('[data-element="notification"]');
-
-    if (notificationElements.length > 1) {
-      notificationElements[0].remove();
+  show(parent = document.body) {
+    if (NotificationMessage.activeNotification) {
+      NotificationMessage.activeNotification.remove();
     }
 
-    setTimeout(() => this.destroy(), this.duration);
+    parent.append(this.element);
+
+    this.timeout = setTimeout(() => this.remove(), this.duration);
+
+    NotificationMessage.activeNotification = this;
   }
 
   remove() {
+    clearTimeout(this.timeout);
+
     if (this.element) {
       this.element.remove();
     }
