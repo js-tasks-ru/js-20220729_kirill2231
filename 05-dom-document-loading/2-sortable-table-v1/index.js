@@ -1,6 +1,6 @@
 export default class SortableTable {
 
-  cachingElements = {};
+  subElements = {};
 
   constructor(headerConfig = [], data = []) {
     this.headerConfig = headerConfig;
@@ -28,7 +28,7 @@ export default class SortableTable {
     element.innerHTML = this.getTemplate();
     this.element = element.firstElementChild;
 
-    this.cachingElements = this.getCachingElements(this.element);
+    this.subElements = this.getSubElements(this.element);
   }
 
   addRowHeaderTable(config) {
@@ -73,7 +73,7 @@ export default class SortableTable {
 
     currentColumn.dataset.order = order;
 
-    this.cachingElements.body.innerHTML = this.addRowsBodyTable(this.headerConfig, sortedData);
+    this.subElements.body.innerHTML = this.addRowsBodyTable(this.headerConfig, sortedData);
   }
 
   sortData(field, order) {
@@ -95,7 +95,7 @@ export default class SortableTable {
     });
   }
 
-  getCachingElements() {
+  getSubElements() {
     const result = {};
     const elements = this.element.querySelectorAll("[data-element]");
 
@@ -116,7 +116,7 @@ export default class SortableTable {
   destroy() {
     this.remove();
     this.element = null;
-    this.cachingElements = {};
+    this.subElements = {};
   }
 }
 
