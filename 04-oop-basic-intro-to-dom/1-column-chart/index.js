@@ -1,55 +1,36 @@
 export default class ColumnChart {
+  chartHeight = 50;
+  cachingElements = {};
 
-  constructor(props = {}) {
+  constructor(
+    {
+      data = [],
+      label = '',
+      value = 0,
+      link = '',
+      formatHeading = data => data
+    }
+    = {}) {
+
+    this.data = data;
+    this.label = label;
+    this.value = formatHeading(value);
+    this.link = link;
+
     this.render();
-    this.initEventListeners();
-
-    this.chartHeight = Number(this.element.style.getPropertyValue('--chart-height'));
-
-    if (Object.keys(props).length === 0) {
-      this.element.classList.add('column-chart_loading');
-      return this;
-    }
-
-    const {data, label, value, link, formatHeading} = props;
-    const columnTitle = this.element.querySelector('.column-chart__title');
-    const columnValue = this.element.querySelector('.column-chart__header');
-
-    if (label !== undefined) {
-      const columnTitle = this.element.querySelector('.column-chart__title');
-      columnTitle.innerHTML = `${label}`;
-    }
-
-    if (link !== undefined) {
-      const columnLink = document.createElement('a')
-      columnLink.classList.add('column-chart__link');
-      columnLink.href = link;
-      columnLink.innerHTML = 'Подробнее';
-      columnTitle.append(columnLink);
-    }
-
-    if (value !== undefined) {
-      columnValue.innerHTML = `${value}`;
-    }
-
-    if (formatHeading !== undefined) {
-      columnValue.innerHTML = formatHeading(value);
-    }
-
-    if (data !== undefined) {
-      this.update(data);
-    }
-
   }
 
   getTemplate() {
     return `
-        <div class="column-chart" style="--chart-height: 50">
+        <div class="column-chart column-chart_loading" style="--chart-height: ${this.chartHeight}">
             <div class="column-chart__title">
+            ${this.label}
+            ${this.getLink()}
             </div>
             <div class="column-chart__container">
-              <div data-element="header" class="column-chart__header">Header</div>
-              <div data-element="body" class="column-chart__chart">
+              <div class="column-chart__header" data-element="header">${this.value}</div>
+              <div class="column-chart__chart" data-element="body">
+                ${this.getColumnChart(this.data)}
               </div>
             </div>
       </div>
@@ -58,47 +39,67 @@ export default class ColumnChart {
 
   render() {
     const element = document.createElement('div');
-
     element.innerHTML = this.getTemplate();
 
     this.element = element.firstElementChild;
+
+    if (this.data.length) {
+      this.element.classList.remove('column-chart_loading');
+    }
+
+    this.cachingElements = this.getCachingElements();
   }
 
-  initEventListeners() { // добавляем обработчики событий
+  getCachingElements() {
+    const result = {};
+    const elements = this.element.querySelectorAll("[data-element]");
 
+    elements.forEach(subElement => {
+      const name = subElement.dataset.element;
+      result[name] = subElement;
+    });
+
+    return result;
   }
 
-  getColumnProps(data) {
+  getColumnChart(data) {
     const maxValue = Math.max(...data);
-    const scale = 50 / maxValue;
+    const scale = this.chartHeight / maxValue;
 
-    return data.map(item => {
+    const columnProps = data.map(item => {
       return {
         percent: (item / maxValue * 100).toFixed(0) + '%',
         value: String(Math.floor(item * scale))
       };
     });
+
+    return columnProps.map(item => {
+      return `<div style="--value: ${item.value}" data-tooltip="${item.percent}"></div>`;
+    })
+    .join("");
+  }
+
+  getLink() {
+    return this.link ?
+      `<a class="column-chart__link" href="${this.link}">Подробнее</a>`
+      : "";
   }
 
   update(data) {
-    const columnChart = this.element.querySelector('.column-chart__chart');
-    const columnProps = this.getColumnProps(data);
+    this.data = data;
 
-    if (columnProps.length !== 0) {
-      columnProps.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.style.setProperty('--value', `${columnProps[index].value}`);
-        div.dataset.tooltip = `${columnProps[index].percent}`;
-        columnChart.append(div);
-      });
-    }
+    this.cachingElements.body.innerHTML = this.getColumnChart(data);
   }
 
   remove() {
-    this.element.remove();
+    if (this.element) {
+      this.element.remove();
+    }
   }
 
-  destroy() { // удаляем обработчики событий
+  destroy() {
     this.remove();
+    this.element = null;
+    this.cachingElements = {};
   }
 }
