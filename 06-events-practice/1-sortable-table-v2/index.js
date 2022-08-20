@@ -1,11 +1,38 @@
 export default class SortableTable {
 
+  onSortClick = event => {
+    event.preventDefault();
+
+    const closestTarget = event.target.closest('[data-sortable]');
+
+    if (closestTarget) {
+      const order = closestTarget.dataset.order === 'asc' ? 'desc' : 'asc';
+      const id = closestTarget.dataset.id;
+
+      this.sort({id, order});
+    }
+  }
+
+  initEventListeners() {
+    const container = this.subElements.header;
+
+    container.addEventListener('pointerdown', this.onSortClick);
+  }
+
+  initialize() {
+    this.initEventListeners();
+  }
+
   subElements = {};
 
   constructor(
-    headerConfig = [],
-    {data = [], sorted = {}}
-    = {},
+    headerConfig = [], {
+      data = [],
+      sorted = {
+        id: headerConfig.find(item => item.sortable).id,
+        order: 'asc'
+      }
+    } = {},
     isSortLocally = true) {
 
     this.headerConfig = headerConfig;
@@ -16,35 +43,6 @@ export default class SortableTable {
     this.render();
   }
 
-  initialize () {
-    const container = this.subElements.header;
-
-    const pointerdown = new MouseEvent('pointerdown', {
-      bubbles: true
-    });
-
-    container.addEventListener('pointerdown', (event) => {
-      event.preventDefault();
-
-      let order = event.target.dataset.order === 'asc' ? 'desc' : 'asc';
-      let id = event.target.dataset.id;
-
-      if (event.target.parentElement.dataset.sortable) {
-        id = event.target.parentElement.dataset.id;
-        order = event.target.parentElement.dataset.order === 'asc' ? 'desc' : 'asc';
-      }
-
-      if (event.target.parentElement.parentElement.dataset.sortable) {
-        id = event.target.parentElement.parentElement.dataset.id;
-        order = event.target.parentElement.parentElement.dataset.order === 'asc' ? 'desc' : 'asc';
-      }
-
-      if (!id) return;
-
-      this.sort({id, order});
-    });
-  }
-
   getTemplate() {
     return `
       <div class="sortable-table">
@@ -52,7 +50,7 @@ export default class SortableTable {
           ${this.addRowHeaderTable(this.headerConfig)}
         </div>
 
-        <div data-element="body" id="" class="sortable-table__body">
+        <div data-element="body" class="sortable-table__body">
           ${this.addRowsBodyTable(this.headerConfig, this.data)}
         </div>
     </div>
@@ -133,13 +131,13 @@ export default class SortableTable {
       const sortFactor = order === 'asc' ? 1 : -1;
 
       switch (sortType) {
-        case 'number':
-          return sortFactor * (a[field] - b[field]);
-        case 'string':
-          return sortFactor * a[field].localeCompare(b[field], ['ru', 'eng']);
-        default:
-          return sortFactor * (a[field] - b[field]);
-        }
+      case 'number':
+        return sortFactor * (a[field] - b[field]);
+      case 'string':
+        return sortFactor * a[field].localeCompare(b[field], ['ru', 'eng']);
+      default:
+        return sortFactor * (a[field] - b[field]);
+      }
     });
   }
 

@@ -1,4 +1,35 @@
 export default class Tooltip {
+
+  onPointerover = event => {
+    const element = event.target.closest('[data-tooltip]');
+
+    if (element) {
+      this.render(element.dataset.tooltip);
+
+      document.addEventListener('pointermove', this.onPointermove);
+    }
+  };
+
+  onPointermove = event => {
+    this.moveTooltip(event);
+  };
+
+  onPointerout = () => {
+    document.removeEventListener('pointermove', this.onPointermove);
+
+    this.remove();
+  };
+
+  initEventListeners () {
+    document.addEventListener('pointerover', this.onPointerover);
+    document.addEventListener('pointerout', this.onPointerout);
+  }
+
+  initialize() {
+    this.initEventListeners();
+  }
+
+
   static instance;
 
   constructor() {
@@ -7,42 +38,6 @@ export default class Tooltip {
     }
 
     Tooltip.instance = this;
-  }
-
-  initialize () {
-    let mouseX;
-    let mouseY;
-
-    const container = document.querySelector('[data-tooltip]');
-
-    const pointerover = new MouseEvent('pointerover', {
-      bubbles: true
-    });
-
-    const pointermove = new MouseEvent('pointerout', {
-      bubbles: true
-    });
-
-    document.addEventListener('mousemove', (event) => {
-      mouseX = event.pageX,
-      mouseY = event.pageY;
-    });
-
-    container.addEventListener('pointermove', () => {
-      this.element.style.top = `${mouseY}px`;
-      this.element.style.left = `${mouseX}px`;
-    });
-
-    container.addEventListener('pointerover', (event) => {
-      this.render(event.target.dataset.tooltip);
-
-      this.element.style.top = `${mouseY}px`;
-      this.element.style.left = `${mouseX}px`;
-    });
-
-    container.addEventListener('pointerout', () => {
-      this.remove();
-    });
   }
 
   getTemplate(param) {
@@ -59,6 +54,15 @@ export default class Tooltip {
     document.body.append(this.element);
   }
 
+  moveTooltip(event) {
+    const shift = 10;
+    const left = event.clientX + shift;
+    const top = event.clientY + shift;
+
+    this.element.style.left = `${left}px`;
+    this.element.style.top = `${top}px`;
+  }
+
   remove() {
     if (this.element) {
       this.element.remove();
@@ -66,6 +70,9 @@ export default class Tooltip {
   }
 
   destroy() {
+    document.removeEventListener('pointerover', this.onPointerover);
+    document.removeEventListener('pointermove', this.onPointermove);
+    document.removeEventListener('pointerout', this.onPointerout);
     this.remove();
     this.element = null;
   }
