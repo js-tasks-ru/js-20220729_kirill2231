@@ -7,16 +7,14 @@ export default class SortableTable {
 
     if (closestTarget) {
       const order = closestTarget.dataset.order === 'asc' ? 'desc' : 'asc';
-      const id = closestTarget.dataset.id;
+      const { id } = closestTarget.dataset;
 
-      this.sort({id, order});
+      this.sort({ id, order });
     }
   }
 
   initEventListeners() {
-    const container = this.subElements.header;
-
-    container.addEventListener('pointerdown', this.onSortClick);
+    this.subElements.header.addEventListener('pointerdown', this.onSortClick);
   }
 
   initialize() {
@@ -106,8 +104,8 @@ export default class SortableTable {
     }).join('');
   }
 
-  sort({id: field, order = 'asc'}) {
-    const sortedData = this.sortData({field, order});
+  sort({ id: field, order }) {
+    const sortedData = this.sortData({ field, order });
     const allColumns = this.element.querySelectorAll('.sortable-table__cell[data-id]');
     const currentColumn = this.element.querySelector(`.sortable-table__cell[data-id="${field}"]`);
 
@@ -122,7 +120,7 @@ export default class SortableTable {
     this.subElements.body.innerHTML = this.addRowsBodyTable(this.headerConfig, sortedData);
   }
 
-  sortData({field, order}) {
+  sortData({ field, order }) {
     const arr = [...this.data];
     const column = this.headerConfig.find(item => item.id === field);
     const { sortType } = column;
