@@ -40,15 +40,15 @@ export default class Tooltip {
     Tooltip.instance = this;
   }
 
-  getTemplate(param) {
+  getTemplate(text) {
     return `
-      <div class="tooltip">${param}</div>
+      <div class="tooltip">${text}</div>
     `;
   }
 
-  render(param) {
+  render(text) {
     const element = document.createElement('div');
-    element.innerHTML = this.getTemplate(param);
+    element.innerHTML = this.getTemplate(text);
     this.element = element.firstElementChild;
 
     document.body.append(this.element);
